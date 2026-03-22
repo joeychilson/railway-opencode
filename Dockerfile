@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN curl https://mise.run | sh && \
-    install -m 0755 /root/.local/bin/mise /usr/local/bin/mise && \
+    install -m 0755 /var/lib/opencode/.local/bin/mise /usr/local/bin/mise && \
     useradd -m -d "$HOME" -s /bin/bash opencode && \
     mkdir -p "$MISE_DATA_DIR" /workspace /opt/seed && \
     chown -R opencode:opencode "$HOME" "$MISE_DATA_DIR" /workspace /opt/seed && \
