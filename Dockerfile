@@ -36,8 +36,8 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN curl https://mise.run | sh && \
     install -m 0755 "$HOME/.local/bin/mise" /usr/local/bin/mise && \
     useradd -m -d "$HOME" -s /bin/bash opencode && \
-    mkdir -p "$MISE_DATA_DIR" /workspace && \
-    chown -R opencode:opencode "$HOME" "$MISE_DATA_DIR" /workspace && \
+    mkdir -p "$MISE_DATA_DIR" /workspace /opt/skills-seed && \
+    chown -R opencode:opencode "$HOME" "$MISE_DATA_DIR" /workspace /opt/skills-seed && \
     chmod 0755 /usr/local/bin/entrypoint.sh
 
 USER opencode
