@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-[[ ! -d "$HOME/.mise" ]] && cp -a /opt/seed/. "$HOME/"
+[[ ! -d "$HOME/.mise" ]] && cp -a /opt/seed/. "$HOME/" 2>/dev/null || true
 
 eval "$(mise activate bash)"
 

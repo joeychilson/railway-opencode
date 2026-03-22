@@ -50,6 +50,8 @@ RUN mise install && \
 
 COPY --chown=opencode:opencode skills/ /tmp/skills/
 RUN npx skills add railwayapp/railway-skills -a opencode -y && \
+    npx skills add vercel-labs/agent-browser -s agent-browser -a opencode -y && \
+    npx skills add anthropics/skills -s skill-creator -s frontend-design -a opencode -y && \
     npx skills add /tmp/skills -a opencode -y && \
     rm -rf /tmp/skills skills-lock.json
 
