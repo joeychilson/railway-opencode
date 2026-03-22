@@ -14,7 +14,6 @@ A one-click Railway template that runs an [OpenCode](https://opencode.ai) server
 - [use-railway](https://skills.sh/railwayapp/railway-skills/use-railway) — deploy and manage Railway services
 - [find-skills](https://skills.sh/vercel-labs/skills/find-skills) — discover and install new skills
 - use-mise — install and manage runtimes and tools
-- [agent-browser](https://github.com/vercel-labs/agent-browser) — headless browser automation
 
 ## Deploy
 
