@@ -160,11 +160,15 @@ The smoke test boots the image the way Railway does (empty, root-owned
 volume), then verifies auth, tools, skills, the seeded workspace, persistence
 across a container replacement, and the no-password guard.
 
-## Versioning
+## Versioning and updates
 
-Versions are pinned in the `Dockerfile` (`OPENCODE_VERSION`, `MISE_VERSION`)
-and `mise.toml` — bump them to upgrade. Images are published from GitHub
-releases under semver tags.
+The opencode version is pinned in the `Dockerfile` (`ARG OPENCODE_VERSION`)
+so every published image ships a version that passed the smoke test. A daily
+workflow checks npm for new opencode releases, bumps the pin, smoke-tests the
+build, and — only on green — pushes to main, tags `v<opencode-version>`, and
+publishes the image. **To update a deployed server, just redeploy** — it
+rebuilds from the current pin; sessions, credentials, and workspace files are
+preserved on the volume.
 
 ## License
 

@@ -70,9 +70,11 @@ if [[ ! -f "$HOME/workspace/AGENTS.md" ]]; then
 fi
 cd "$HOME/workspace"
 
+# Explicit path: the image's pinned opencode always wins over anything a
+# session may have installed into the mise shims dir on the volume.
 # "::" binds dual-stack: IPv4 for Railway's public edge, IPv6 for Railway
 # private networking (legacy environments are IPv6-only internally).
-exec opencode serve \
+exec /usr/local/bin/opencode serve \
   --hostname "${OPENCODE_HOSTNAME:-::}" \
   --port "${PORT:-4096}" \
   --print-logs

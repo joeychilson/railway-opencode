@@ -1,0 +1,113 @@
+name: Update opencode
+
+# Daily: if a new opencode release is on npm, bump the Dockerfile pin, build
+# and smoke test it, and only on green push the bump to main, tag the release
+# (v<opencode version>), and publish the image. A broken opencode release
+# fails here — never in a user's deploy.
+#
+# The image is published from this workflow directly because releases created
+# with GITHUB_TOKEN do not trigger the build-docker workflow.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: update-opencode
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for a new opencode version
+        id: v
+        run: |
+          latest="$(npm view opencode-ai version)"
+          current="$(sed -n 's/^ARG OPENCODE_VERSION=//p' Dockerfile)"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          if [ -n "$latest" ] && [ "$latest" != "$current" ] \
+             && ! git ls-remote --exit-code --tags origin "v$latest" >/dev/null 2>&1; then
+            echo "bump=true" >> "$GITHUB_OUTPUT"
+            echo "Bumping opencode $current -> $latest"
+          else
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+            echo "Already current ($current)"
+          fi
+
+      - name: Bump OPENCODE_VERSION
+        if: steps.v.outputs.bump == 'true'
+        run: |
+          sed -i "s/^ARG OPENCODE_VERSION=.*/ARG OPENCODE_VERSION=${{ steps.v.outputs.latest }}/" Dockerfile
+          grep '^ARG OPENCODE_VERSION=' Dockerfile
+
+      - name: Set up Docker Buildx
+        if: steps.v.outputs.bump == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        if: steps.v.outputs.bump == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: railway-opencode:test
+          build-args: |
+            SEED_STAMP=v${{ steps.v.outputs.latest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run smoke test
+        if: steps.v.outputs.bump == 'true'
+        run: ./test/smoke-test.sh railway-opencode:test
+
+      - name: Push bump and create release
+        if: steps.v.outputs.bump == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Dockerfile
+          git commit -m "Bump opencode to ${{ steps.v.outputs.latest }}"
+          git push origin HEAD:main
+          gh release create "v${{ steps.v.outputs.latest }}" \
+            --title "v${{ steps.v.outputs.latest }}" \
+            --notes "opencode ${{ steps.v.outputs.latest }} (automated bump, smoke-tested)"
+
+      - name: Log in to Container Registry
+        if: steps.v.outputs.bump == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish image
+        if: steps.v.outputs.bump == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.v.outputs.latest }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            SEED_STAMP=v${{ steps.v.outputs.latest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
