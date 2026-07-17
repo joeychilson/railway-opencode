@@ -1,0 +1,14 @@
+# Global tool set for the opencode server, installed at image build time.
+# Runtimes are pinned to a major version; CLIs track the latest release
+# available when the image was built. At runtime, install more tools with
+# `mise use <tool>@<version>` (see the use-mise skill) — those persist on the
+# volume.
+[tools]
+node = "24"
+python = "3.13"
+go = "latest"
+bun = "latest"
+pnpm = "latest"
+uv = "latest"
+gh = "latest"
+railway = "latest"

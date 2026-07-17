@@ -13,7 +13,7 @@ These are already available — no installation needed:
 
 - `node`, `python`, `bun`, `go`
 - `pnpm`, `uv`
-- `gh` (GitHub CLI)
+- `gh` (GitHub CLI), `railway` (Railway CLI)
 
 Run `mise list` to see exact versions.
 
@@ -74,4 +74,7 @@ mise exec node@20 -- node script.js
 
 Use this when the user asks to install a language, runtime, CLI tool, or package manager. Always prefer mise over apt or manual installation for developer tools.
 
-Do not use apt-get for anything mise can handle. Check `mise registry` first.
+apt-get is NOT available on this server (you are not root and there is no
+sudo). mise is the only supported way to install tools. Check `mise registry`
+first. Tools you install with mise land on the persistent volume and survive
+restarts and redeploys.
