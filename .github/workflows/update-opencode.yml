@@ -1,6 +1,6 @@
 name: Update opencode
 
-# Daily: if a new opencode release is on npm, bump the Dockerfile pin, build
+# Every 6 hours: if a new opencode release is on npm, bump the Dockerfile pin, build
 # and smoke test it, and only on green push the bump to main, tag the release
 # (v<opencode version>), and publish the image. A broken opencode release
 # fails here — never in a user's deploy.
@@ -10,7 +10,7 @@ name: Update opencode
 
 on:
   schedule:
-    - cron: "17 6 * * *"
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -28,14 +28,19 @@ env:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check for a new opencode version
         id: v
         run: |
           latest="$(npm view opencode-ai version)"
+          if ! printf '%s' "$latest" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Unexpected version format from npm: '$latest'" >&2
+            exit 1
+          fi
           current="$(sed -n 's/^ARG OPENCODE_VERSION=//p' Dockerfile)"
           echo "latest=$latest" >> "$GITHUB_OUTPUT"
           echo "current=$current" >> "$GITHUB_OUTPUT"
@@ -43,9 +48,12 @@ jobs:
              && ! git ls-remote --exit-code --tags origin "v$latest" >/dev/null 2>&1; then
             echo "bump=true" >> "$GITHUB_OUTPUT"
             echo "Bumping opencode $current -> $latest"
-          else
+          elif [ "$latest" = "$current" ]; then
             echo "bump=false" >> "$GITHUB_OUTPUT"
             echo "Already current ($current)"
+          else
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: tag v$latest already exists (pin is $current)"
           fi
 
       - name: Bump OPENCODE_VERSION
@@ -60,7 +68,7 @@ jobs:
 
       - name: Build test image
         if: steps.v.outputs.bump == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
@@ -99,7 +107,7 @@ jobs:
 
       - name: Publish image
         if: steps.v.outputs.bump == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true

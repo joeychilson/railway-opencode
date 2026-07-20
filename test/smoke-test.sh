@@ -42,7 +42,7 @@ start_server() {
 
 wait_healthy() {
   for _ in $(seq 60); do
-    if curl -fsS -o /dev/null -u "opencode:$PASSWORD" "http://127.0.0.1:$PORT/app" 2>/dev/null; then
+    if curl -fsS --max-time 5 -o /dev/null -u "opencode:$PASSWORD" "http://127.0.0.1:$PORT/app" 2>/dev/null; then
       return 0
     fi
     sleep 2
@@ -57,10 +57,10 @@ wait_healthy || fail "server did not become healthy"
 pass "server up and authenticated requests succeed"
 
 echo "== auth =="
-code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/app")"
+code="$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/app")"
 [[ "$code" == "401" ]] || fail "expected 401 without credentials, got $code"
 pass "unauthenticated requests are rejected (401)"
-code="$(curl -s -o /dev/null -w '%{http_code}' -u "opencode:wrong" "http://127.0.0.1:$PORT/app")"
+code="$(curl -s --max-time 10 -o /dev/null -w '%{http_code}' -u "opencode:wrong" "http://127.0.0.1:$PORT/app")"
 [[ "$code" == "401" ]] || fail "expected 401 with wrong password, got $code"
 pass "wrong password rejected (401)"
 
