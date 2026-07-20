@@ -15,7 +15,7 @@
 FROM debian:bookworm-slim
 
 # Version pins — bump these to upgrade:
-ARG OPENCODE_VERSION=1.18.3
+ARG OPENCODE_VERSION=1.18.4
 ARG MISE_VERSION=v2026.7.6
 # Changing the stamp makes existing volumes re-sync image-managed files
 # (mise tools, default mise config, .bashrc) on next boot. CI sets it to the
