@@ -34,12 +34,27 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CHROMIUM_PATH=/usr/bin/chromium \
     PATH=/var/lib/opencode/.mise/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
+# mise falls back to compiling a new Python patch release until a prebuilt
+# archive is available, so keep the CPython build dependencies in the image.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     ca-certificates \
     build-essential \
     pkg-config \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libncurses-dev \
+    libgdbm-dev \
+    libgdbm-compat-dev \
+    libffi-dev \
+    liblzma-dev \
+    uuid-dev \
+    tk-dev \
+    xz-utils \
     gosu \
     jq \
     ripgrep \
