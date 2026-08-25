@@ -1,3 +1,12 @@
-node_modules/
+.DS_Store
+Thumbs.db
 .env
+.env.*
+!.env.example
 *.log
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+node_modules/

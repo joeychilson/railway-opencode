@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.7
 
 # OpenCode server for Railway: a pinned opencode binary, mise-managed dev
 # runtimes, preinstalled agent skills, and headless Chromium for browser

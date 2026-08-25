@@ -1,6 +1,6 @@
 # OpenCode on Railway
 
-[![CI](https://github.com/joeychilson/railway-opencode/actions/workflows/test.yml/badge.svg)](https://github.com/joeychilson/railway-opencode/actions/workflows/test.yml)
+[![CI](https://github.com/joeychilson/railway-opencode/actions/workflows/ci.yml/badge.svg)](https://github.com/joeychilson/railway-opencode/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/joeychilson/railway-opencode)](https://github.com/joeychilson/railway-opencode/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -120,16 +120,22 @@ http://<service-name>.railway.internal:4096
 
 This is the only recommended setup for `OPENCODE_ALLOW_UNAUTHENTICATED=1`.
 
-For a manual Railway deployment, use the image
-`ghcr.io/joeychilson/railway-opencode:latest`, attach a volume at
+For a manual Railway deployment, use
+`ghcr.io/joeychilson/railway-opencode:<version>`, attach a volume at
 `/var/lib/opencode`, configure authentication and a provider, and attach a
 public domain to port `4096` when external access is required.
 
 ## Updates
 
+Images are published only from GitHub releases. The wrapper uses its own
+semantic version, independently from OpenCode. Exact `X.Y.Z` and
+`sha-<commit>` tags are immutable, while `X.Y` tracks the latest compatible
+patch release. There is no `latest` tag.
+
 The OpenCode version is pinned in the `Dockerfile`. A scheduled workflow checks
-for new releases every six hours, builds and smoke-tests each update, then
-commits the pin, creates a GitHub release, and publishes the approved image.
+for new releases and opens a pull request. CI smoke-tests each update before it
+is reviewed and released. See [RELEASING.md](RELEASING.md) for the release
+policy.
 
 Redeploy the service to update. Workspace files, sessions, and credentials
 remain on the volume.

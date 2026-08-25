@@ -1,4 +1,4 @@
-name: Test
+name: ci
 
 on:
   pull_request:
@@ -6,24 +6,37 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   smoke-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7.0.1
+
+      - name: Check shell syntax
+        run: |
+          sh -n healthcheck.sh
+          bash -n entrypoint.sh
+          bash -n test/smoke-test.sh
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4.3.0
 
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
-          push: false
           load: true
           tags: railway-opencode:test
+          build-args: SEED_STAMP=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
