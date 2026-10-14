@@ -12,6 +12,12 @@
       "matchManagers": ["mise"],
       "automerge": false,
       "addLabels": ["release:major"]
+    },
+    {
+      "description": "Keep Python pinned to a release line like 3.15, so patch releases arrive with image rebuilds instead of as held PRs",
+      "matchManagers": ["mise"],
+      "matchDepNames": ["python"],
+      "extractVersion": "^v(?<version>\\d+\\.\\d+)\\.\\d+$"
     }
   ]
 }

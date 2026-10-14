@@ -73,7 +73,7 @@ pass "web UI loads without credentials and signs in itself"
 echo "== environment inside the container =="
 version="$(docker exec "$C1" gosu opencode opencode --version)" || fail "opencode not runnable"
 pass "$version"
-for tool in node python go bun pnpm uv gh railway rg jq; do
+for tool in node corepack python go bun pnpm uv gh railway rg jq; do
   docker exec "$C1" gosu opencode bash -c "command -v $tool" >/dev/null || fail "$tool missing"
 done
 pass "runtimes and CLIs resolve via mise shims"

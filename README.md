@@ -126,9 +126,21 @@ files, sessions, and credentials stay on the volume across updates.
 
 [Renovate](https://docs.renovatebot.com) bumps OpenCode when a new release is 2
 days old. The bump merges after the smoke test passes on amd64 and arm64, and
-the merge publishes a patch release. New OpenCode majors wait for review. The
+the merge publishes a patch release. New OpenCode majors and new Node.js or
+Python lines wait for review, and a new runtime line releases as a major. The
 release policy for all of these templates is in
 [railway-templates](https://github.com/joeychilson/railway-templates#releases).
+
+### Upgrading from 3.x
+
+Version 4.0 moves the default Node.js from 24 to 26 and Python from 3.13 to
+3.15. Change the image to `ghcr.io/joeychilson/railway-opencode:4.0`.
+
+Node.js 24 and Python 3.13 stay installed on the volume, so existing virtual
+environments keep working. Global npm packages and Python packages installed
+outside a virtual environment stay with the old versions, so reinstall them.
+To keep a project on the old versions, run `mise use node@24 python@3.13` in
+its directory.
 
 ### Upgrading from 2.x
 
