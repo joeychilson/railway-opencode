@@ -137,8 +137,10 @@ Version 4.0 moves the default Node.js from 24 to 26 and Python from 3.13 to
 3.15. Change the image to `ghcr.io/joeychilson/railway-opencode:4.0`.
 
 Node.js 24 and Python 3.13 stay installed on the volume, so existing virtual
-environments keep working. To keep a project on the old versions, run
-`mise use node@24 python@3.13` in its directory.
+environments keep working. Global npm packages and Python packages installed
+outside a virtual environment stay with the old versions, so reinstall them.
+To keep a project on the old versions, run `mise use node@24 python@3.13` in
+its directory.
 
 ### Upgrading from 2.x
 

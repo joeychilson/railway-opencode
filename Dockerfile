@@ -96,10 +96,11 @@ COPY --chown=opencode:opencode mise.toml $HOME/.config/mise/config.toml
 RUN echo 'eval "$(mise activate bash)"' >> "$HOME/.bashrc" \
     && mise install \
     && mise reshim \
-    && npm install -g agent-browser \
+    && npm install -g agent-browser corepack \
     && mise reshim \
     && node --version && python --version && bun --version && go version \
-    && gh --version && railway --version && agent-browser --help >/dev/null
+    && gh --version && railway --version && corepack --version \
+    && agent-browser --help >/dev/null
 
 # Skills installed at build time land in ~/.agents/skills; move them to the
 # image-managed skills dir (listed under skills in opencode.json) so they
