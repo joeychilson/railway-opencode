@@ -5,7 +5,7 @@
 # volume.
 [tools]
 node = "24"
-python = "3.13"
+python = "3.15.0"
 go = "latest"
 bun = "latest"
 pnpm = "latest"
