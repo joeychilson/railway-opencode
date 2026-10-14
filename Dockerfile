@@ -102,7 +102,7 @@ RUN echo 'eval "$(mise activate bash)"' >> "$HOME/.bashrc" \
     && gh --version && railway --version && agent-browser --help >/dev/null
 
 # Skills installed at build time land in ~/.agents/skills; move them to the
-# image-managed skills dir (referenced by opencode.json skills.paths) so they
+# image-managed skills dir (listed under skills in opencode.json) so they
 # upgrade with the image instead of going stale on the volume.
 RUN npx -y skills add railwayapp/railway-skills -a opencode -y \
     && npx -y skills add vercel-labs/agent-browser -s agent-browser -a opencode -y \
