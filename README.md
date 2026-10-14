@@ -3,126 +3,117 @@
 [![Release](https://img.shields.io/github/v/release/joeychilson/railway-opencode)](https://github.com/joeychilson/railway-opencode/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Railway template for running a persistent, password-protected
-[OpenCode](https://opencode.ai) server with a web UI, remote TUI, API, developer
+A Railway template for a persistent, password-protected
+[OpenCode](https://opencode.ai) 2 server with a web UI, an API, developer
 tools, agent skills, and browser automation.
 
-## Deployment
+## Deploy
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/opencode-for-railway?referralCode=NhCCIt&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
-The template provides:
+The template creates one `opencode` service with:
 
-- A pinned OpenCode release for AMD64 and ARM64.
-- HTTP basic authentication on every route.
-- A persistent volume at `/var/lib/opencode`.
-- A workspace that survives redeployments.
-- Node.js, Python, Go, Bun, pnpm, uv, GitHub CLI, and Railway CLI through
-  [mise](https://mise.jdx.dev).
+- The `ghcr.io/joeychilson/railway-opencode` image for amd64 and arm64.
+- A generated `OPENCODE_PASSWORD`.
+- A volume at `/var/lib/opencode` for the workspace, sessions, and credentials.
+- A public domain on port `4096`.
+- Node.js, Python, Go, Bun, pnpm, uv, the GitHub CLI, and the Railway CLI
+  through [mise](https://mise.jdx.dev).
 - Headless Chromium and
   [agent-browser](https://skills.sh/vercel-labs/agent-browser/agent-browser).
-- Preinstalled skills for Railway, browser automation, frontend design, skill
-  creation, tool installation, and skill discovery.
+- Skills for Railway, browser automation, frontend design, skill creation,
+  installing tools, and finding more skills.
 
-Set `OPENCODE_SERVER_PASSWORD` and at least one model provider API key before
-deploying. The server refuses to start without a password unless unauthenticated
-mode is enabled explicitly.
+Add at least one model provider key, such as `ANTHROPIC_API_KEY`, or sign in to
+a provider from the web UI after deploying. The server refuses to start without
+a password.
 
-## Connect
+To deploy the image without the template, use
+`ghcr.io/joeychilson/railway-opencode:<version>`, attach a volume at
+`/var/lib/opencode`, set `OPENCODE_PASSWORD`, and attach a public domain to
+port `4096`.
 
-Open the Railway domain in a browser and sign in with username `opencode` and
-the configured password.
+## Usage
 
-Attach the OpenCode TUI from a local machine:
+Open the Railway domain in a browser and sign in with the password.
+
+Remote clients need OpenCode 2 on your machine. Open the TUI against the server:
 
 ```text
-opencode attach https://your-app.up.railway.app -p your-password
+OPENCODE_PASSWORD=your-password opencode --server https://your-app.up.railway.app
 ```
 
 Run a one-shot prompt:
 
 ```text
-OPENCODE_SERVER_PASSWORD=your-password \
-  opencode run --attach https://your-app.up.railway.app "fix the failing tests"
+OPENCODE_PASSWORD=your-password \
+  opencode run --server https://your-app.up.railway.app "fix the failing tests"
 ```
 
-Connect with the TypeScript SDK:
+Connect with the TypeScript client:
 
 ```ts
-import { createOpencodeClient } from "@opencode-ai/sdk"
+import { OpenCode } from "@opencode/client"
 
-const client = createOpencodeClient({
-  baseUrl: "https://opencode:your-password@your-app.up.railway.app",
+const client = OpenCode.make({
+  baseUrl: "https://your-app.up.railway.app",
+  headers: { authorization: `Basic ${btoa("opencode:your-password")}` },
 })
 ```
 
-The OpenAPI specification is available at `/doc`, and server-sent events are
-available at `/event`.
+The API is under `/api` and uses HTTP basic auth with the username `opencode`.
+The OpenAPI document is at `/openapi.json`, and server-sent events are at
+`/api/event`. The web UI itself loads without a password and then asks for one.
 
 ## Configuration
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `OPENCODE_SERVER_PASSWORD` | None | Required basic-auth password |
-| `OPENCODE_SERVER_USERNAME` | `opencode` | Basic-auth username |
-| `OPENCODE_ALLOW_UNAUTHENTICATED` | None | Set to `1` only for private-network-only deployments |
-| `OPENCODE_HOSTNAME` | `::` | Dual-stack listen address |
-| `PORT` | `4096` | Server port |
-| `GIT_USER_NAME` | None | Git commit name |
-| `GIT_USER_EMAIL` | None | Git commit email |
-| `GITHUB_TOKEN` or `GH_TOKEN` | None | Authenticate GitHub CLI and Git over HTTPS |
+| `OPENCODE_PASSWORD` | Generated | Password for the web UI, API, and remote clients. `OPENCODE_SERVER_PASSWORD` also works. |
+| `GIT_USER_NAME` | None | Name on Git commits |
+| `GIT_USER_EMAIL` | None | Email on Git commits |
+| `GITHUB_TOKEN` or `GH_TOKEN` | None | Signs in the GitHub CLI and Git over HTTPS |
+| `RAILWAY_API_TOKEN` | None | Signs in the Railway CLI |
 | `OPENCODE_CONFIG_CONTENT` | None | JSON merged into the OpenCode configuration |
+| `OPENCODE_HOSTNAME` | `::` | Listen address; `::` covers IPv4 and IPv6 |
+| `PORT` | `4096` | Server port |
 
-OpenCode reads provider credentials from the environment. Supported variables
-include `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`,
-`GOOGLE_API_KEY`, `XAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, and
-`DEEPSEEK_API_KEY`, along with AWS, Vertex AI, and Azure credentials.
+OpenCode reads provider keys from the environment, including
+`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`,
+`XAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, and `DEEPSEEK_API_KEY`.
+Credentials you add in OpenCode, including provider sign-ins, are stored on the
+volume.
 
-Credentials added through OpenCode, including provider OAuth credentials, are
-stored on the volume. The baked configuration disables sharing and automatic
-updates. Extend it with `OPENCODE_CONFIG_CONTENT` or a project-level
-`opencode.json` file.
+The baked configuration turns off session sharing and self-updates. Extend it
+with `OPENCODE_CONFIG_CONTENT` or an `opencode.json` in a project.
 
 ## Persistence
 
-The Railway volume is mounted at `/var/lib/opencode`, which is also the runtime
-user's home directory. It stores:
+The volume at `/var/lib/opencode` is also the home directory. It holds:
 
 - The default project in `workspace/`.
-- Sessions, logs, and provider credentials.
+- Sessions, logs, and credentials.
 - Tools and skills installed at runtime.
 - Git and GitHub CLI configuration.
 
-The OpenCode binary, baked skills, default configuration, Chromium, and system
-packages remain in the image. On an image update, managed defaults are refreshed
-without replacing workspace files or OpenCode state.
+The OpenCode binary, the baked skills and configuration, Chromium, and system
+packages live in the image. When the image changes, the entrypoint refreshes
+the image-managed files on the volume and leaves your files and OpenCode state
+alone.
 
-Keep Serverless sleeping disabled because sleeping interrupts active sessions.
-A volume-backed service also has a brief downtime window during redeployment
-because Railway cannot mount one volume in two containers.
-
-Install additional tools and skills without root access:
+Install more tools and skills without root:
 
 ```text
 mise use <tool>@<version>
 npx skills add <package> -a opencode -y
 ```
 
-## Private networking
+Keep Serverless sleeping off, because sleeping interrupts running sessions. A
+redeploy has a short outage, since one volume can't be mounted in two
+containers at once.
 
-For access only from services in the same Railway project, remove the public
-domain and connect to:
-
-```text
-http://<service-name>.railway.internal:4096
-```
-
-This is the only recommended setup for `OPENCODE_ALLOW_UNAUTHENTICATED=1`.
-
-For a manual Railway deployment, use
-`ghcr.io/joeychilson/railway-opencode:<version>`, attach a volume at
-`/var/lib/opencode`, configure authentication and a provider, and attach a
-public domain to port `4096` when external access is required.
+For access only from services in the same project, remove the public domain
+and connect to `http://opencode.railway.internal:4096`.
 
 ## Updates
 
@@ -135,25 +126,41 @@ files, sessions, and credentials stay on the volume across updates.
 
 [Renovate](https://docs.renovatebot.com) bumps OpenCode when a new release is 2
 days old. The bump merges after the smoke test passes on amd64 and arm64, and
-the merge publishes a patch release. The release policy for all of these
-templates is in
+the merge publishes a patch release. New OpenCode majors wait for review. The
+release policy for all of these templates is in
 [railway-templates](https://github.com/joeychilson/railway-templates#releases).
+
+### Upgrading from 2.x
+
+Versions 2.x run OpenCode 1. Version 3.0 moves to OpenCode 2, which changes
+the clients and the API:
+
+1. Back up the volume. OpenCode 2 migrates sessions and credentials on its
+   first boot, and OpenCode 1 can't use the volume afterwards.
+2. Change the image to `ghcr.io/joeychilson/railway-opencode:3.0` and set the
+   healthcheck path to `/`.
+3. Rename `OPENCODE_SERVER_PASSWORD` to `OPENCODE_PASSWORD`. The old name
+   still works.
+4. Remove `OPENCODE_SERVER_USERNAME` and `OPENCODE_ALLOW_UNAUTHENTICATED`. The
+   username is always `opencode`, and a password is always required.
+5. Upgrade local clients to OpenCode 2. `opencode attach URL` is now
+   `opencode --server URL`, and `/doc` moved to `/openapi.json`.
 
 ## Development
 
 ```text
 docker build -t railway-opencode:test .
 ./test/smoke-test.sh railway-opencode:test
-
-docker run --rm \
-  -e OPENCODE_SERVER_PASSWORD=test \
-  -p 4096:4096 \
-  railway-opencode:test
 ```
 
-The smoke test verifies authentication, preinstalled tools and skills, the
-seeded workspace, persistent state, volume ownership, and the missing-password
-guard.
+The smoke test boots the image on an empty volume and checks the password
+guard, API authentication, the web UI, the tools and skills, the seeded
+workspace, volume ownership, and persistence across a container replacement.
+To run the image yourself:
+
+```text
+docker run --rm -e OPENCODE_PASSWORD=test -p 4096:4096 railway-opencode:test
+```
 
 ## License
 

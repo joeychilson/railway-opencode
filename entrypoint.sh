@@ -14,18 +14,16 @@ fi
 
 # ── Phase 2: opencode user ───────────────────────────────────────────────────
 
-# Refuse to expose an unauthenticated server. Railway gives this service a
-# public URL, and without a password anyone on the internet can execute code
-# and spend your API credits.
-if [[ -z "${OPENCODE_SERVER_PASSWORD:-}" && "${OPENCODE_ALLOW_UNAUTHENTICATED:-}" != "1" ]]; then
+# Refuse to start without a password. Railway gives this service a public URL,
+# and the password is all that stops anyone from running code and spending
+# your API credits. OpenCode reads OPENCODE_PASSWORD and still honors the
+# older OPENCODE_SERVER_PASSWORD.
+if [[ -z "${OPENCODE_PASSWORD:-}${OPENCODE_SERVER_PASSWORD:-}" ]]; then
   cat >&2 <<'EOF'
-ERROR: OPENCODE_SERVER_PASSWORD is not set.
+ERROR: OPENCODE_PASSWORD is not set.
 
-Set the OPENCODE_SERVER_PASSWORD service variable to protect this server with
-HTTP basic auth (username "opencode", or set OPENCODE_SERVER_USERNAME).
-
-If you intentionally run without auth (e.g. private networking only, with no
-public domain), set OPENCODE_ALLOW_UNAUTHENTICATED=1.
+Set the OPENCODE_PASSWORD service variable. The web UI, the API, and remote
+clients sign in with it, using the username "opencode".
 EOF
   exit 1
 fi
