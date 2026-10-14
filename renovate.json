@@ -8,9 +8,10 @@
       "automerge": true
     },
     {
-      "description": "A new Node or Python line changes what users' projects run on, so it waits for review",
+      "description": "A new Node or Python line changes what users' projects run on, so it waits for review and releases as a major by default",
       "matchManagers": ["mise"],
-      "automerge": false
+      "automerge": false,
+      "addLabels": ["release:major"]
     }
   ]
 }

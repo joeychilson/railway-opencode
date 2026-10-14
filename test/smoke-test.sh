@@ -81,7 +81,7 @@ docker exec "$C1" gosu opencode test -f /var/lib/opencode/workspace/AGENTS.md ||
 pass "workspace seeded with AGENTS.md"
 # Skill discovery finishes shortly after the server is ready.
 for _ in $(seq 30); do
-  skills="$(curl -fsS --max-time 10 -u "opencode:$PASSWORD" "http://127.0.0.1:$PORT/api/skill?directory=/var/lib/opencode/workspace")"
+  skills="$(curl -fsS --max-time 10 -u "opencode:$PASSWORD" "http://127.0.0.1:$PORT/api/skill?directory=/var/lib/opencode/workspace" || true)"
   [[ "$skills" == *'"id":"use-railway"'* ]] && break
   sleep 1
 done
