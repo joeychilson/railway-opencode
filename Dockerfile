@@ -1,26 +1,24 @@
-# syntax=docker/dockerfile:1.7
-
 # OpenCode server for Railway: a pinned opencode binary, mise-managed dev
 # runtimes, preinstalled agent skills, and headless Chromium for browser
 # automation.
 #
 # Layout:
-#   /usr/local/bin/opencode   pinned binary — upgrades with the image
-#   /opt/opencode/            baked config + image-managed skills
-#   /var/lib/opencode ($HOME) runtime state — mount the Railway volume here
-#   /opt/seed/                pristine copy of $HOME; the entrypoint populates
-#                             the volume from it on first boot and re-syncs
-#                             image-managed files when the seed stamp changes
+#   /usr/local/bin/opencode   pinned binary, upgraded with the image
+#   /opt/opencode/            baked config and image-managed skills
+#   /var/lib/opencode ($HOME) runtime state; mount the Railway volume here
+#   /opt/seed/                pristine copy of $HOME; the entrypoint copies it
+#                             onto the volume on first boot and again whenever
+#                             the seed stamp changes
 
-FROM debian:bookworm-slim
+# renovate: datasource=docker packageName=debian depName=Debian depType=tool
+ARG DEBIAN_VERSION=bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
 
-# Version pins — bump these to upgrade:
+FROM debian:${DEBIAN_VERSION}
+
+# renovate: datasource=npm packageName=opencode-ai depName=OpenCode
 ARG OPENCODE_VERSION=1.19.0
+# renovate: datasource=github-releases packageName=jdx/mise depName=mise depType=tool
 ARG MISE_VERSION=v2026.7.6
-# Changing the stamp makes existing volumes re-sync image-managed files
-# (mise tools, default mise config, .bashrc) on next boot. CI sets it to the
-# git SHA so every published image refreshes the seed.
-ARG SEED_STAMP=opencode-${OPENCODE_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/var/lib/opencode \
@@ -124,11 +122,13 @@ RUN npx -y skills add railwayapp/railway-skills -a opencode -y \
     && rm -rf "$HOME"/.agents "$HOME"/skills-lock.json \
     && ls /opt/opencode/skills
 
-# Slim down, then snapshot $HOME as the volume seed.
+# Slim down, then snapshot $HOME as the volume seed. This layer reruns
+# whenever an earlier layer changed, so a fresh random stamp marks exactly
+# the images whose seed may differ from what is on the volume.
 RUN npm cache clean --force \
     && mise cache clear \
     && rm -rf "$HOME/.npm" "$HOME/.cache" \
-    && printf '%s\n' "${SEED_STAMP}" > "$HOME/.seed-stamp" \
+    && cat /proc/sys/kernel/random/uuid > "$HOME/.seed-stamp" \
     && cp -a "$HOME"/. /opt/seed/
 
 # The entrypoint starts as root to chown the Railway volume (mounted

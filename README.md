@@ -1,6 +1,5 @@
 # OpenCode on Railway
 
-[![CI](https://github.com/joeychilson/railway-opencode/actions/workflows/ci.yml/badge.svg)](https://github.com/joeychilson/railway-opencode/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/joeychilson/railway-opencode)](https://github.com/joeychilson/railway-opencode/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -127,18 +126,18 @@ public domain to port `4096` when external access is required.
 
 ## Updates
 
-Images are published only from GitHub releases. The wrapper uses its own
-semantic version, independently from OpenCode. Exact `X.Y.Z` and
-`sha-<commit>` tags are immutable, while `X.Y` tracks the latest compatible
-patch release. There is no `latest` tag.
+Each release is published as `ghcr.io/joeychilson/railway-opencode:X.Y.Z` and
+moves the `X.Y` tag to it. The Railway template deploys `X.Y` with patch
+auto-updates on, so a deployment that keeps that setting picks up patch releases
+in Railway's nightly update window. A minor or major release starts a new `X.Y`
+tag, and its release notes say what to change before you move to it. Workspace
+files, sessions, and credentials stay on the volume across updates.
 
-The OpenCode version is pinned in the `Dockerfile`. A scheduled workflow checks
-for new releases and opens a pull request. CI smoke-tests each update before it
-is reviewed and released. See [RELEASING.md](RELEASING.md) for the release
-policy.
-
-Redeploy the service to update. Workspace files, sessions, and credentials
-remain on the volume.
+[Renovate](https://docs.renovatebot.com) bumps OpenCode when a new release is 2
+days old. The bump merges after the smoke test passes on amd64 and arm64, and
+the merge publishes a patch release. The release policy for all of these
+templates is in
+[railway-templates](https://github.com/joeychilson/railway-templates#releases).
 
 ## Development
 
