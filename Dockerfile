@@ -11,12 +11,12 @@
 #                             the seed stamp changes
 
 # renovate: datasource=docker packageName=debian depName=Debian depType=tool
-ARG DEBIAN_VERSION=bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+ARG DEBIAN_VERSION=trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
 
 FROM debian:${DEBIAN_VERSION}
 
-# renovate: datasource=npm packageName=opencode-ai depName=OpenCode
-ARG OPENCODE_VERSION=1.19.0
+# renovate: datasource=npm packageName=@opencode/cli depName=OpenCode
+ARG OPENCODE_VERSION=2.0.28
 # renovate: datasource=github-releases packageName=jdx/mise depName=mise depType=tool
 ARG MISE_VERSION=v2026.7.6
 
@@ -64,17 +64,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     chromium-sandbox \
     fonts-liberation \
-    libatk-bridge2.0-0 \
-    libdrm2 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libasound2 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libcups2 \
-    libxkbcommon0 \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
@@ -83,7 +72,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -fsSL https://mise.run | MISE_VERSION=${MISE_VERSION} MISE_INSTALL_PATH=/usr/local/bin/mise sh \
     && mise --version
 
-RUN curl -fsSL https://opencode.ai/install | bash -s -- --version "${OPENCODE_VERSION}" --no-modify-path \
+RUN curl -fsSL https://opencode.ai/v2/install | bash -s -- --version "${OPENCODE_VERSION}" --no-modify-path \
     && install -m 0755 "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode \
     && rm -rf "$HOME/.opencode" \
     && opencode --version | grep -F "${OPENCODE_VERSION}"
