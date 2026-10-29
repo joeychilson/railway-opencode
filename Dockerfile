@@ -18,7 +18,7 @@ FROM debian:${DEBIAN_VERSION}
 # renovate: datasource=npm packageName=@opencode/cli depName=OpenCode
 ARG OPENCODE_VERSION=2.2.0
 # renovate: datasource=github-releases packageName=jdx/mise depName=mise depType=tool
-ARG MISE_VERSION=v2026.10.20
+ARG MISE_VERSION=v2026.10.21
 
 ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/var/lib/opencode \
