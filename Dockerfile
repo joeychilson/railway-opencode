@@ -16,7 +16,7 @@ ARG DEBIAN_VERSION=trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a
 FROM debian:${DEBIAN_VERSION}
 
 # renovate: datasource=npm packageName=@opencode/cli depName=OpenCode
-ARG OPENCODE_VERSION=2.2.0
+ARG OPENCODE_VERSION=2.2.1
 # renovate: datasource=github-releases packageName=jdx/mise depName=mise depType=tool
 ARG MISE_VERSION=v2026.10.22
 
